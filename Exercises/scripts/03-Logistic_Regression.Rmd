@@ -118,13 +118,13 @@ Here we only made use of sepal length and width to distinguish setosa and virgin
 mini_iris <- iris %>%
   filter(Species != 'setosa')
 
-ggplot(mini_iris, aes(x = Petal.Length, y = Petal.Width, color = Species)) +
+ggplot(mini_iris, aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +
   geom_point(size = 3, alpha = 0.7) +  # Add points with some transparency
   theme_minimal() +  # Use a clean theme
   labs(
-    title = "Iris Dataset: Petal Dimensions by Species",
-    x = "Petal Length",
-    y = "Petal Width"
+    title = "Iris Dataset: Sepal Dimensions by Species",
+    x = "Sepal Length",
+    y = "Sepal Width"
   )
 
 
