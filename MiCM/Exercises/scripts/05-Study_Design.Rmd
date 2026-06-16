@@ -1,0 +1,156 @@
+---
+title: "05 - Study Design"
+author: 
+- name: "Adrien Osakwe"
+  affiliation: Workshop Lead
+
+date:  "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+   rmdformats::html_clean:
+    toc: false
+    thumbnails: false
+    highlight: kate
+    use_bookdown: true
+    code_folding: hide
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,eval=TRUE)
+```
+
+# Study Design
+
+Beyond knowing how to collect, manipulate and analyse data, being able to design a study that minimizes type I and type II errors is a crucial skill. As we have seen, test statistics will depend on the difference/enrichment between groups as well as the **number of samples**. As we have no control on the difference, we need to ensure that the sample size we use is capable of detecting a signal (if it is present).
+
+When trying to select an appropriate sample size, we want to consider two parameters:
+
+$\alpha$ which represents the **significance level**
+
+-   Probability of rejecting the null hypothesis if it is true
+
+1-$\beta$ which represents the **power**
+
+-   Probability of rejecting the null if it is false
+
+## Confidence Intervals
+
+Suppose we are interested in getting an estimate for the effect of a viral infection on patient weight. In practice we may want to generate a confidence interval for this estimate but would want to collect enough samples to ensure a tight enough interval (a large interval isn't very useful). We can determine this by using the **margin of error** **E**.
+
+$$
+E = \frac{Z \sigma}{\sqrt{n}}
+$$
+
+Which we can rearrange to get
+
+$$
+n = \left( \frac{Z\sigma}{E} \right)^2
+$$
+
+Say we want our estimate to be $\pm 5$ pounds. We will then set $E = 5$. Here we can set $Z$ to be a z-score for a 95% confidence interval ($\alpha = 0.05$). We do this by finding the z-score that gives us the $1-\alpha/2$ quantile of the normal distribution.
+
+```{r}
+#Sample a pilot study
+set.seed(1234)
+a <- 0.05
+x_sim <- rnorm(10,0.5,15)
+sd <- sd(x_sim)
+
+E <- 5
+
+z <- qnorm(1-a/2)
+
+
+n <- ((z*sd)/E)^2
+n
+```
+
+In this case, based on the standard deviation from our pilot study, we would need [at least]{.underline} 35 observations to obtain a 95% CI within the desired range.
+
+```{r}
+#Simulating a study with a mean of 0
+mu <- 0
+x <- rnorm(round(n),mu,sd)
+x_out <- t.test(x, conf.level = 1-a) #Provides us with our confidence interval
+conf <- x_out$conf.int
+
+```
+
+### Exercise
+
+1)  Repeat the above for a 99% CI
+
+```{r}
+
+```
+
+2)  Now try with a margin of error set to be $\pm 0.1$ pounds.
+
+```{r}
+
+```
+
+## One-Sample t-test
+
+We can do the same for one and two-sample t-tests. Skipping the derivation, we have to solve
+
+$$
+n = \left( \frac{(Z_{1-\alpha/2} + Z_{1-\beta})}{ES}\right)^2
+$$
+
+where
+
+$$
+ES = \frac{(|\mu_1-\mu_0|)}{\sigma}
+$$
+
+Here let's set $\alpha = 0.05%$ and $1-\beta = 0.8$ . We will assume we are still working on the weight change problem but want to determine if the weight change is different from 0. We will reuse the s.d. from our simulated pilot study.
+
+```{r}
+a <- 0.05
+b <- 0.2
+
+mu0 <- 0
+mu1 <- -10
+
+effsz <- abs(mu1-mu0)/sd
+
+n <- ((qnorm(1-a)+qnorm(1-b))/effsz)^2
+n
+
+```
+
+```{r}
+#Checking result with simulated data
+x1 <- rnorm(round(n),mu1,sd)
+t.test(x1)
+```
+
+## Two-Sample t-test
+
+This is very similar to the above except for a few changes
+
+$$
+n_i = 2\left( \frac{(Z_{1-\alpha/2} + Z_{1-\beta})}{ES}\right)^2
+$$
+
+where
+
+$$
+ES = \frac{(|\mu_1-\mu_2|)}{\sigma}
+$$
+
+and $n_i$ is the sample size for condition $i$. Let's imagine here that we are comparing the difference in weight loss between different viral infections.
+
+```{r}
+a <- 0.05
+b <- 0.2
+
+mu1 <- 0
+mu2 <- 10
+
+effsz <- abs(mu1-mu2)/sd
+
+n <- 2*((qnorm(1-a)+qnorm(1-b))/effsz)^2
+n
+
+```

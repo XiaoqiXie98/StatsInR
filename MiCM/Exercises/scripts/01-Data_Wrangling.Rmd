@@ -1,0 +1,336 @@
+---
+title: "Data Wrangling"
+author: 
+- name: "Adrien Osakwe"
+  affiliation: Workshop Lead
+- name: Larisa M. Soto
+  affiliation: Original Material
+date:  "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+   rmdformats::html_clean:
+    toc: true
+    thumbnails: false
+    floating: true
+    highlight: kate
+    use_bookdown: true
+---
+
+# Data manipulation with dplyr
+
+**Learning objectives**
+
+-   Become familiar with the `dplyr` syntax
+-   Create pipes with the operator %\>%
+-   Perform operations on data frames using dplyr and tidyr functions
+-   Implement functions from other external packages
+
+There are several packages that allow for more sophisticated processing operations to be done faster. We will take a look at some functions from one of them. I encourage you to look into `plyr` and `tidyr` after this workshop.
+
+For this section we will use data from the `gapminder` package.
+
+```{r}
+library(dplyr)
+library(gapminder)
+dim(gapminder)
+```
+
+View the data frame
+
+```{r}
+View(gapminder)
+```
+
+```{r}
+summary(gapminder$lifeExp)
+```
+
+## Manipulation with `dplyr`
+
+We often need to select certain observations (rows) or variables (columns), or group the data by certain variable(s) to calculate some summary statistics. Although these operations can be done using base R functions, they require the creation of multiple intermediate objects and a lot of code repetition. There are two packages that provide functions to streamline common operations on tabular data and make the code look nicer and cleaner.
+
+These packages are part of a broader family called `tidyverse`, for more information you can visit <https://www.tidyverse.org/>.
+
+We will cover 5 of the most commonly used functions and combine them using pipes (`%>%`):
+
+1\. `select()` - used to extract data
+
+2\. `filter()` - to filter entries using logical vectors
+
+3\. `group_by()` - to solve the split-apply-combine problem
+
+4\. `summarize()` - to obtain summary statistics
+
+5\. `mutate()` - to create new columns
+
+```{r}
+library(tidyr)
+```
+
+### Introducing pipes
+
+```{r}
+head(gapminder)
+gapminder %>%
+  head()
+gapminder %>%
+  tail()
+```
+
+```{r}
+x <- 100
+log10(sqrt(x))
+
+x %>%
+  sqrt() %>%
+  log10()
+```
+
+### Using `select()`
+
+To subset a data frame
+
+```{r}
+dplyr::select(.data = gapminder, 
+       year, country, gdpPercap) %>%
+  head()
+
+head(gapminder[,c("year","country","gdpPercap")])
+```
+
+To remove columns
+
+```{r}
+dplyr::select(.data = gapminder, 
+       -continent) %>%
+      head()
+```
+
+```{r}
+gapminder %>% 
+  dplyr::select(year, country, gdpPercap) %>%
+  head()
+```
+
+### Using `filter()`
+
+Include **only European countries** and select the following columns; year, country and gdpPercap
+
+```{r}
+gapminder %>%
+    dplyr::filter(continent == "Europe") %>%
+    dplyr::select(year, country, gdpPercap) %>%
+    head()
+```
+
+Using multiple filters at once
+
+```{r}
+gapminder %>%
+  dplyr::filter(continent == "Europe", year == 2007) %>%
+  dplyr::select(country, lifeExp)
+```
+
+Extract unique entries
+
+```{r}
+gapminder %>%
+  dplyr::select(country, continent) %>%
+  dplyr::distinct()
+```
+
+Order according to a column
+
+```{r}
+gapminder %>%
+  dplyr::select(country, continent,year,pop) %>%
+  dplyr::arrange(desc(pop)) %>%
+  head()
+```
+
+### Using `group_by()`
+
+It internally groups observations based on the specified variable(s)
+
+```{r}
+str(gapminder)
+```
+
+```{r}
+str(gapminder %>% dplyr::group_by(continent))
+```
+
+### Using `summarize()`
+
+```{r}
+gdp_c <- gapminder %>%
+          dplyr::group_by(continent) %>%
+          dplyr::summarize(mean_gdpPercap = mean(gdpPercap))
+gdp_c
+```
+
+Combine multiple summary statistics
+
+```{r}
+gapminder %>%
+    dplyr::group_by(continent) %>%
+    dplyr::summarize(mean_le = mean(lifeExp),
+                      min_le = min(lifeExp),
+                      max_le = max(lifeExp),
+                      se_le = sd(lifeExp)/sqrt(dplyr::n()))
+```
+
+### Using `mutate()`
+
+```{r}
+gapminder %>%
+  dplyr::mutate(gdp_billion = gdpPercap*pop/10^9)
+```
+
+```{r}
+new_df <- gapminder %>% 
+  mutate(abc = ifelse(lifeExp >= 60, 'A','B')) %>%
+  group_by(abc) %>%
+  summarize(mean_abc_gdp = mean(gdpPercap))
+
+new_df
+```
+
+### Putting them all together
+
+```{r}
+gdp_pop_ext <- gapminder %>%
+                dplyr::mutate(gdp_billion = gdpPercap*pop/10^9) %>%
+                dplyr::group_by(continent,year) %>%
+                dplyr::summarize(mean_gdpPercap = mean(gdpPercap),
+                                 sd_gdpPercap = sd(gdpPercap),
+                                 mean_pop = mean(pop),
+                                 sd_pop = sd(pop),
+                                 mean_gdp_billion = mean(gdp_billion),
+                                 sd_gdp_billion = sd(gdp_billion)) 
+
+gdp_pop_ext
+```
+
+## Hands-on advanced data manipulation
+
+1.  Write one command (it can span multiple lines) using pipes that will output a data frame that has only the columns `lifeExp`, `country` and `year` for the records before the year 1977 from African countries, but not for other Continents.
+
+    ```{r}
+
+    ```
+
+    \
+
+2.  Calculate the average life expectancy per country. Which country has the longest average life expectancy and which one the shortest average life expectancy?
+
+    ```{r}
+
+    ```
+
+    \
+
+3.  In the previous hands-on you discovered that all the entries from 2007 are actually from 2008. Write a command to edit the data accordingly using pipes. In the same command filter only the entries from 2008 to verify the change.
+
+    ```{r}
+
+    ```
+
+## Data Cleaning
+
+First thing we could do is to drop any row that includes a missing entry. This can be done with `drop_na()` from the package `tidyr` (this package is loaded with `tidyverse`).
+
+```{r}
+# Creating Missing data
+noisy_gap <- gapminder
+missing_idx <- sample(1:nrow(noisy_gap),
+                      350)
+
+#Adding Noisy entries
+noisy_gap[missing_idx,"lifeExp"] <- -20
+print(nrow(noisy_gap))
+
+#Modify incorrect entries to mark as NA
+noisy_gap <- noisy_gap %>%
+  mutate(lifeExp = ifelse(lifeExp > 0,lifeExp,NA))
+
+
+noisy_gap %>% 
+  drop_na()
+```
+
+It is often the case that removing rows with missing entries causes too much data loss. To this end, it is preferable to fill the entries with **imputed** values. A simple way of doing this is with the `fill()` from `tidyr`. By default, the entries will be filled with the same value as the next non-missing entry below. This means that the **order** of the entries is important. You can consider making different assumptions to decide how they should be ordered. In our case, we see that life-expectancy has a reasonable correlation with GDP per-capita so we can consider ordering the data by gdpPercap to fill in missing lifeExp entries.
+
+```{r }
+# Checking correlation bet
+noisy_gap %>% 
+  drop_na() %>%
+  select(lifeExp,gdpPercap) %>%
+  cor()
+
+##Keeping track of original order
+noisy_gap$Index <- 1:nrow(noisy_gap)
+
+noisy_gap <- noisy_gap %>% 
+  dplyr::arrange(desc(gdpPercap)) %>%
+  fill(lifeExp,.direction = 'downup')
+
+#Realigning Datasets
+noisy_gap <- noisy_gap[order(noisy_gap$Index),]
+
+#Checking correlation between true and imputed
+overall_correlation <- cor(gapminder$lifeExp, noisy_gap$lifeExp)
+missing_idx_correlation <- cor(gapminder$lifeExp[missing_idx], noisy_gap$lifeExp[missing_idx])
+
+# Print correlations
+cat("Overall correlation:", overall_correlation, "\n")
+cat("Correlation for missing indices:", missing_idx_correlation, "\n")
+```
+
+Fill entries with the sample average/median
+
+```{r}
+noisy_gap[missing_idx,"lifeExp"] <- -20
+noisy_gap <- noisy_gap %>%
+  mutate(lifeExp = ifelse(lifeExp > 0,lifeExp,NA))
+
+med_le <- median(noisy_gap$lifeExp,na.rm = T)
+avg_le <- mean(noisy_gap$lifeExp, na.rm = T)
+
+med_cor <- cor(gapminder$lifeExp, ifelse(is.na(noisy_gap$lifeExp),med_le,noisy_gap$lifeExp))
+avg_cor <- cor(gapminder$lifeExp, ifelse(is.na(noisy_gap$lifeExp),avg_le,noisy_gap$lifeExp))
+
+cat("Overall correlation with median:", med_cor, "\n")
+cat("Overall correlation with mean:", avg_cor, "\n")
+
+```
+
+Repeat above but using Country-specific Averages
+
+```{r}
+noisy_gap[missing_idx,"lifeExp"] <- -20
+noisy_gap <- noisy_gap %>%
+  mutate(lifeExp = ifelse(lifeExp > 0,lifeExp,NA))
+
+country_avg <- noisy_gap %>%
+  group_by(country) %>%
+  summarize(avg_lifeExp = mean(lifeExp, na.rm = TRUE), .groups = "drop")
+
+noisy_gap <- noisy_gap %>%
+  left_join(country_avg, by = "country") %>%
+  mutate(lifeExp = ifelse(is.na(lifeExp), avg_lifeExp, lifeExp)) %>%
+  select(-avg_lifeExp)
+
+# Check correlation after filling with country-specific averages
+country_avg_cor <- cor(gapminder$lifeExp, noisy_gap$lifeExp)
+country_avg_miss_cor <- cor(gapminder$lifeExp[missing_idx], noisy_gap$lifeExp[missing_idx])
+cat("Overall correlation with Country-specific means:", country_avg_cor, "\n")
+cat("Overall correlation with Country-specific means for missing data:", country_avg_miss_cor, "\n")
+
+```
+
+We can see that for both the overall dataset and the missing entries, the imputations are a lot more accurate when split by condition. We could also consider imputing by a combination of factors by training a model to predict the missing entries.
+
+# References
+
+-   [Base R Cheat Sheet](https://iqss.github.io/dss-workshops/R/Rintro/base-r-cheat-sheet.pdf)\
+-   [Google's R Style Guide](https://google.github.io/styleguide/Rguide.html)
