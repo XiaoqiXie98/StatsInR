@@ -184,9 +184,6 @@ gapminder %>%
 ```{r}
 gapminder %>%
   dplyr::mutate(gdp_billion = gdpPercap*pop/10^9)
-
-
-
 ```
 
 ```{r}
@@ -216,7 +213,7 @@ gdp_pop_ext
 
 ## Hands-on advanced data manipulation
 
-1.  Write one command (it can span multiple lines) using pipes that will output a data frame that has only the columns `lifeExp`, `country` and `year` for the records before the year 2000 from African countries, but not for other Continents.
+1.  Write one command (it can span multiple lines) using pipes that will output a data frame that has only the columns `lifeExp`, `country` and `year` for the records before the year 1977 from African countries, but not for other Continents.
 
     ```{r}
 

@@ -72,6 +72,7 @@ boxplot(value ~ group, data = df)
 
 # The t.test() function has several parameters
 # If we put in two vectors, we can compare them
+#sample size of x1 now is twice x2.
 t.test(rep(x1,2), x2) 
 ```
 
@@ -80,7 +81,8 @@ t.test(rep(x1,2), x2)
 # This is a logical variable that returns whether the standard deviations of our two samples are equal
 # If they are, it returns true
 # Try putting sd1==sd2 into the console and seeing what it returns!
-ve <- sd1 == sd2
+ve <- sd1 == sd2 #which version if t-test we are doing
+#if equal, pooled t-test, else, Welch's t-test (default).
 
 t.test(x1,x2,var.equal = ve)
 ```
@@ -242,6 +244,7 @@ Load the base R data `PlantGroup` using the command `data("PlantGrowth")`. Visua
 ```
 
 Run the `TukeyHSD()` command on the ANOVA you just created. Where are the differences in the model?
+do pairwise comparisons between group means
 
 ```{r ANOVA exercise 2}
 

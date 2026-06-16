@@ -108,6 +108,11 @@ mini_iris$Num_pred <- predict.lm(iris.lm,mini_iris)
 summary(mini_iris$Num_pred)
 
 summary(mini_iris$Prob)
+
+#if a value is less than 0.5, we force to 0 and otherwise 1.
+num_pred = ifelse(mini_iris$Num_pred<=0.5,0,1)
+accuracy = length(which(mini_iris$Num_Species == num_pred))/length(num_pred)
+accuracy
 ```
 
 ## Exercise
@@ -126,8 +131,4 @@ ggplot(mini_iris, aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +
     x = "Sepal Length",
     y = "Sepal Width"
   )
-
-
-
-
 ```

@@ -29,11 +29,11 @@ suppressPackageStartupMessages(library(gapminder))
 suppressPackageStartupMessages(library(dplyr))
 ```
 
-Write one command ( can span multiple lines) using pipes that will output a data frame that has only the columns `lifeExp`, `country` and `year` for the records before the year 2000 from African countries, but not for other Continents.
+Write one command ( can span multiple lines) using pipes that will output a data frame that has only the columns `lifeExp`, `country` and `year` for the records before the year 1977 from African countries, but not for other Continents.
 
 ```{r}
 tidy_africa <- gapminder %>%
-                dplyr::filter(continent == "Africa") %>%
+                dplyr::filter(continent == "Africa", year<1977) %>%
                 dplyr::select(year, country, lifeExp)
 head(tidy_africa)
 ```
